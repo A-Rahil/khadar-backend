@@ -24,7 +24,7 @@ features = [
 
 label = 'crop_disease_status'
 
-df = pd.read_csv(r"C:\Users\ahmra\Downloads\Smart_Farming_Crop_Yield_2024.csv")
+df = pd.read_csv(r"\Smart_Farming_Crop_Yield_2024.csv")
 
 encoder_features = LabelEncoder()
 df['crop_type'] = encoder_features.fit_transform(df['crop_type'])
@@ -49,7 +49,7 @@ accuracy = accuracy_score(y_test, y_pred)
 print(f"Accuracy is: {accuracy}")
 
 ##Plant Recommender
-dataSet = pd.read_csv(r"C:\Users\ahmra\Downloads\archive\Crop_recommendation.csv")
+dataSet = pd.read_csv(r"\Crop_recommendation.csv")
 features = ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
 X = dataSet[features]
 y = dataSet['label']
