@@ -20,6 +20,14 @@ try:
 except FileNotFoundError:
     print("Recommendation model not found at ", recommendModelPath)
     recommendModel = None
+    
+try:
+    yieldModelPath = os.path.join(modelDir, 'yieldModel.pkl')
+    with open(yieldModelPath, 'rb') as f:
+        yieldModel = pickle.load(f)
+except FileNotFoundError:
+    print("Yield prediction model not found at ", yieldModelPath)
+    yieldModel = None
 
 def getDiseasePred(data):
     if not diseaseModel:
@@ -41,4 +49,15 @@ def getRecommend(data):
         return str(prediction[0])
     except Exception as e:
         print("Recommendation error: ", e)
+        return None
+    
+def getYieldPred(data):
+    if not yieldModel:
+        return None
+    try:
+        df = pd.DataFrame([data])
+        prediction = yieldModel.predict(df)
+        return int(prediction[0])
+    except Exception as e:
+        print("Yield prediction error: ", e)
         return None
