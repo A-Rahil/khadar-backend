@@ -38,7 +38,8 @@ yieldModel = XGBClassifier(
     reg_lambda=1,
     n_jobs=-1,
     eval_metric="logloss",
-    verbosity=0
+    verbosity=0,
+    device='cuda'
 )
 
 yieldModel.fit(X_train, y_train)
