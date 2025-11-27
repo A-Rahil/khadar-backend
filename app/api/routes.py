@@ -69,4 +69,3 @@ def crop_yield():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-l
