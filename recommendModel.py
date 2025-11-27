@@ -34,7 +34,8 @@ plantRecomm = XGBClassifier(
     reg_lambda=1,
     n_jobs=-1,  #using all cores of the cpu
     subsample=0.8,
-    verbosity=0 #to avoid any outputs onto the console
+    verbosity=0, #to avoid any outputs onto the console
+    device='cuda'
 )
 
 plantRecomm.fit(X_train, y_train)
@@ -45,3 +46,6 @@ print(f"Accuracy is: {accuracy}")
 
 with open('recommendation_model.pkl', 'wb') as f:
     pickle.dump(plantRecomm, f)
+
+with open('recommend_X_test.pkl', 'wb') as f:
+    pickle.dump(X_test, f)
