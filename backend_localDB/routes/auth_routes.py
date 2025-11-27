@@ -1,32 +1,32 @@
-from flask import Blueprint, request, jsonify
-from backend_localDB.db import get_connection
-import bcrypt
 import re
 import uuid
+import bcrypt
+import mysql.connector
+from flask import Blueprint, request, jsonify
+from backend_localDB.db import get_connection
 
 auth = Blueprint("auth", __name__)
 
-ALLOWED_TYPES = [
+ALLOWED_TYPES = {
     "building_owner",
     "private_firm",
-    "government_official",
-    "system_admin",
-    "technician",
-]
+    "technician"
+}
 
 EMAIL_REGEX = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
 PHONE_REGEX = r"^[+]?[0-9]{10,15}$"
 
 
-# ------------------------------------
-#              SIGNUP
-# ------------------------------------
+# ----------------------------------------------------------
+#                           SIGNUP
+# ----------------------------------------------------------
 @auth.route("/signup", methods=["POST"])
 def signup():
     data = request.get_json()
 
-    required_fields = ["username", "email", "password", "user_type"]
-    for field in required_fields:
+    # REQUIRED FIELDS
+    required = ["username", "email", "password", "user_type"]
+    for field in required:
         if field not in data or not data[field]:
             return jsonify({"error": f"{field} is required"}), 400
 
@@ -34,12 +34,10 @@ def signup():
     email = data["email"].strip()
     phone = data.get("phone_number")
     password = data["password"]
-    uae_pass_id = data.get("uae_pass_id")
     user_type = data["user_type"]
+    uae_pass_id = data.get("uae_pass_id")  # OPTIONAL
 
-    # -------------------------
     # VALIDATION
-    # -------------------------
     if not re.match(EMAIL_REGEX, email):
         return jsonify({"error": "Invalid email format"}), 400
 
@@ -47,36 +45,79 @@ def signup():
         return jsonify({"error": "Password must be at least 6 characters"}), 400
 
     if phone and not re.match(PHONE_REGEX, phone):
-        return jsonify({"error": "Invalid phone number"}), 400
+        return jsonify({"error": "Invalid phone number format"}), 400
 
     if user_type not in ALLOWED_TYPES:
-        return jsonify({"error": f"Invalid user_type. Allowed: {ALLOWED_TYPES}"}), 400
+        return (
+            jsonify({"error": f"Invalid user_type. Allowed: {list(ALLOWED_TYPES)}"}),
+            400,
+        )
 
-    # -------------------------
     # HASH PASSWORD
-    # -------------------------
     password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-
     user_id = str(uuid.uuid4())
 
     try:
         conn = get_connection()
         cursor = conn.cursor()
 
-        query = """
-            INSERT INTO users 
-            (user_id, username, email, phone_number, password_hash, uae_pass_id, user_type)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """
-
+        # ----------------------------------------------------
+        # INSERT INTO USERS
+        # ----------------------------------------------------
         cursor.execute(
-            query,
+            """
+            INSERT INTO users (
+                user_id, username, email, phone_number, password_hash,
+                uae_pass_id, user_type
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """,
             (user_id, username, email, phone, password_hash, uae_pass_id, user_type),
         )
+
+        # ----------------------------------------------------
+        # INSERT INTO ROLE-SPECIFIC TABLES
+        # ----------------------------------------------------
+        if user_type == "building_owner":
+            cursor.execute(
+                """
+                INSERT INTO building_owners (buildingOwner_id, user_id)
+                VALUES (%s, %s)
+            """,
+                (str(uuid.uuid4()), user_id),
+            )
+
+        elif user_type == "private_firm":
+            cursor.execute(
+                """
+                INSERT INTO private_firm (privateFirm_id, user_id)
+                VALUES (%s, %s)
+            """,
+                (str(uuid.uuid4()), user_id),
+            )
+
+        elif user_type == "technician":
+            cursor.execute(
+                """
+                INSERT INTO technicians (technician_id, user_id, experience_level)
+                VALUES (%s, %s, %s)
+            """,
+                (str(uuid.uuid4()), user_id, 0),
+            )
+
+        elif user_type == "government_official":
+            return jsonify({"error": "government_official table not implemented"}), 500
+
         conn.commit()
 
         return (
-            jsonify({"message": "User created successfully", "user_id": user_id}),
+            jsonify(
+                {
+                    "message": "User registered successfully",
+                    "user_id": user_id,
+                    "user_type": user_type,
+                }
+            ),
             201,
         )
 
@@ -100,9 +141,9 @@ def signup():
         conn.close()
 
 
-# ------------------------------------
-#              LOGIN
-# ------------------------------------
+# ----------------------------------------------------------
+#                           LOGIN
+# ----------------------------------------------------------
 @auth.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -126,14 +167,15 @@ def login():
         if not bcrypt.checkpw(password.encode(), user["password_hash"].encode()):
             return jsonify({"error": "Incorrect password"}), 401
 
-        # Update last login date
         cursor.execute(
-            "UPDATE users SET last_login_date = NOW() WHERE user_id = %s",
+            """
+            UPDATE users SET last_login_date = NOW()
+            WHERE user_id = %s
+        """,
             (user["user_id"],),
         )
         conn.commit()
 
-        # Remove sensitive fields before returning
         del user["password_hash"]
 
         return jsonify({"message": "Login successful", "user": user}), 200
