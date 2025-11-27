@@ -35,7 +35,7 @@ def plant_recommendation():
         return jsonify({
             "model": "XGBoost",
             "result": result,
-            "input_used": datap
+            "input_used": data
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
