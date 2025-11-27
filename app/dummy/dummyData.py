@@ -23,7 +23,3 @@ def load_random_sample(file_name):
 
     # Convert to pure Python dict
     return row.to_dict()
-
-disease_data = load_random_sample("disease_X_test.pkl")
-recommendation_data = load_random_sample("reco_X_test.pkl")
-yield_data = load_random_sample("yield_X_test.pkl")
