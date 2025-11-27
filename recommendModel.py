@@ -25,6 +25,12 @@ y = dataSet[label]
 le = LabelEncoder()
 y_encoded = le.fit_transform(y)
 
+# Save mapping of encoded values → original crop names
+label_mapping = {i: label for i, label in enumerate(le.classes_)}
+
+with open('recommendation_label_mapping.pkl', 'wb') as f:
+    pickle.dump(label_mapping, f)
+
 X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2)
 
 plantRecomm = XGBClassifier(
