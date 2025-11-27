@@ -44,6 +44,7 @@ diseasePred = plantRecom = XGBClassifier(
     subsample=0.8,
     verbosity=0,
     n_jobs=-1,
+    device='cuda'
 )
 
 diseasePred.fit(X_train, y_train)
