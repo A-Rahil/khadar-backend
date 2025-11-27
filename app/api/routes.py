@@ -25,7 +25,7 @@ def predict_plant_health():
 # plant_recommendation
 @routes.route('/api/plant_recommendation', methods=['GET'])
 def plant_recommendation():
-    data = load_random_sample("reco_X_test.pkl")
+    data = load_random_sample("recommendation_X_test.pkl")
 
     if not data:
         return jsonify({'error': 'No input received'}), 400
@@ -35,7 +35,7 @@ def plant_recommendation():
         return jsonify({
             "model": "XGBoost",
             "result": result,
-            "input_used": data
+            "input_used": datap
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
