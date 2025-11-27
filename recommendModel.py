@@ -45,3 +45,6 @@ print(f"Accuracy is: {accuracy}")
 
 with open('recommendation_model.pkl', 'wb') as f:
     pickle.dump(plantRecomm, f)
+
+with open('recommend_X_test.pkl', 'wb') as f:
+    pickle.dump(X_test, f)

@@ -1,17 +1,29 @@
-import pandas as pd
 import os
+import pickle
+import pandas as pd
+import random
 
-# Get the directory of the current file (dummyData.py)
+# Get app directory
 current_dir = os.path.dirname(__file__)  # app/dummy
-
-# Go two levels up to khadar-backend
 base_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
+model_dir = os.path.join(base_dir, "app", "models")
 
-disease_df = pd.read_csv(os.path.join(base_dir, "Smart_Farming_Crop_Yield_2024.csv"))
-disease_data = disease_df.iloc[0].to_dict()
+# Helper to load a random sample from X_test
+def load_random_sample(file_name):
+    path = os.path.join(model_dir, file_name)
+    if not os.path.exists(path):
+        print(f"File not found: {path}")
+        return None
 
-recommendation_df = pd.read_csv(os.path.join(base_dir, "Crop_recommendation.csv"))
-recommendation_data = recommendation_df.iloc[0].to_dict()
+    with open(path, "rb") as f:
+        X_test = pickle.load(f)
 
-yield_df = pd.read_csv(os.path.join(base_dir, "plant_growth_data.csv"))
-yield_data = yield_df.iloc[0].to_dict()
+    # Pick a random row
+    row = X_test.sample(1).iloc[0]
+
+    # Convert to pure Python dict
+    return row.to_dict()
+
+disease_data = load_random_sample("disease_X_test.pkl")
+recommendation_data = load_random_sample("reco_X_test.pkl")
+yield_data = load_random_sample("yield_X_test.pkl")

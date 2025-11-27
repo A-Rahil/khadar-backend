@@ -53,3 +53,6 @@ print(f"Accuracy is: {accuracy}")
 
 with open('diseaseModel.pkl', 'wb') as f:
     pickle.dump(diseasePred, f)
+
+with open('disease_X_test.pkl', 'wb') as f:
+    pickle.dump(X_test, f)

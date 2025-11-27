@@ -50,3 +50,6 @@ print(f"Yield Prediction Model Accuracy: {accuracy:.4f}")
 
 with open('yieldModel.pkl', 'wb') as f:
     pickle.dump(yieldModel, f)
+
+with open('yield_X_test.pkl', 'wb') as f:
+    pickle.dump(X_test, f)
