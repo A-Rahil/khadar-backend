@@ -23,3 +23,15 @@ def load_random_sample(file_name):
 
     # Convert to pure Python dict
     return row.to_dict()
+
+def new_load_random_samples(file_name, n=100):
+    path = os.path.join(model_dir, file_name)
+
+    with open(path, "rb") as f:
+        X_test = pickle.load(f)
+
+    # sample without replacement if possible
+    samples = X_test.sample(n=min(n, len(X_test)))
+
+    # convert each row to dict
+    return samples.to_dict(orient="records")
