@@ -25,7 +25,7 @@ def predict_plant_health():
 # plant_recommendation
 @routes.route('/api/plant_recommendation', methods=['GET'])
 def plant_recommendation():
-    data = load_random_sample("recommendation_X_test.pkl")
+    data = load_random_sample("recommend_X_test.pkl")
 
     if not data:
         return jsonify({'error': 'No input received'}), 400
